@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PelletTech Pro - Mantenimiento Técnico</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    body { -webkit-tap-highlight-color: transparent; }
+    .tab-active { border-bottom: 3px solid #ef4444; color: #ef4444; font-weight: bold; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen pb-20">
+
+  <!-- ENCABEZADO / NAVBAR -->
+  <header class="bg-slate-900 text-white p-4 sticky top-0 z-50 shadow-md flex justify-between items-center">
+    <div class="flex items-center gap-2">
+      <span class="text-2xl">🔥</span>
+      <div>
+        <h1 class="font-bold text-lg leading-none">PelletTech Pro</h1>
+        <p class="text-xs text-slate-400">Orden de Trabajo & Informe Técnico</p>
+      </div>
+    </div>
+    <button onclick="reiniciarFormulario()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700">
+      Nueva OT
+    </button>
+  </header>
+
+  <!-- NAVEGACIÓN POR PESTAÑAS -->
+  <nav class="bg-white border-b border-slate-200 sticky top-[57px] z-40 shadow-sm overflow-x-auto flex">
+    <button onclick="cambiarPestana('datos')" id="btn-datos" class="tab-btn tab-active flex-1 min-w-[90px] py-3 text-xs text-center font-medium">1. Datos OT</button>
+    <button onclick="cambiarPestana('checklist')" id="btn-checklist" class="tab-btn flex-1 min-w-[90px] py-3 text-xs text-center font-medium text-slate-500">2. Checklist</button>
+    <button onclick="cambiarPestana('parametros')" id="btn-parametros" class="tab-btn flex-1 min-w-[90px] py-3 text-xs text-center font-medium text-slate-500">3. Parámetros</button>
+    <button onclick="cambiarPestana('firmas')" id="btn-firmas" class="tab-btn flex-1 min-w-[90px] py-3 text-xs text-center font-medium text-slate-500">4. Firmas</button>
+  </nav>
+
+  <!-- CONTENIDO DE LA APP -->
+  <main class="max-w-2xl mx-auto p-4">
+
+    <!-- PESTAÑA 1: DATOS DE OT Y CLIENTE -->
+    <section id="pestana-datos" class="space-y-4">
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
+        <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider text-red-600 border-b pb-2">Información de la OT</h2>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-semibold text-slate-600">N° Orden de Trabajo</label>
+            <input type="text" id="ot_numero" class="w-full mt-1 p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm font-bold text-slate-800">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-600">Fecha Servicio</label>
+            <input type="date" id="ot_fecha" class="w-full mt-1 p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm">
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
+        <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider text-red-600 border-b pb-2">Datos del Cliente</h2>
+        <div>
+          <label class="text-xs font-semibold text-slate-600">Nombre / Nombre del Cliente</label>
+          <input type="text" id="cliente_nombre" placeholder="Ej: Juan Pérez" class="w-full mt-1 p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-600">Dirección y Ciudad</label>
+          <input type="text" id="cliente_direccion" placeholder="Ej: Av. Alemania 123, Temuco" class="w-full mt-1 p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-600">Teléfono / WhatsApp</label>
+          <input type="tel" id="cliente_telefono" placeholder="+56912345678" class="w-full mt-1 p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm">
+        </div>
+      </div>
+
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
+        <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider text-red-600 border-b pb-2">Datos del Equipo</h2>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-semibold text-slate-600">Marca Estufa</label>
+            <input type="text" id="equipo_marca" placeholder="Ej: Ravelli, Ecoforest" class="w-full mt-1 p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-600">Modelo</label>
+            <input type="text" id="equipo_modelo" placeholder="Ej: Italia 8000" class="w-full mt-1 p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-semibold text-slate-600">N° de Serie</label>
+            <input type="text" id="equipo_serie" placeholder="Opcional" class="w-full mt-1 p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-600">Horas de Uso</label>
+            <input type="number" id="equipo_horas" placeholder="Ej: 1450 hrs" class="w-full mt-1 p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm">
+          </div>
+        </div>
+      </div>
+
+      <button onclick="cambiarPestana('checklist')" class="w-full bg-red-600 text-white font-bold py-3 rounded-xl shadow-md hover:bg-red-700 transition">
+        Siguiente: Checklist de Mantención ➔
+      </button>
+    </section>
+
+    <!-- PESTAÑA 2: CHECKLIST -->
+    <section id="pestana-checklist" class="space-y-4 hidden">
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+        <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider text-red-600 border-b pb-2 mb-3">Checklist de Trabajo Realizado</h2>
+        <p class="text-xs text-slate-500 mb-4">Marca el estado de cada punto ejecutado durante el servicio.</p>
+
+        <div id="contenedor-checklist" class="space-y-4">
+          <!-- Generado dinámicamente -->
+        </div>
+      </div>
+
+      <button onclick="cambiarPestana('parametros')" class="w-full bg-red-600 text-white font-bold py-3 rounded-xl shadow-md hover:bg-red-700 transition">
+        Siguiente: Parámetros y Mediciones ➔
+      </button>
+    </section>
+
+    <!-- PESTAÑA 3: PARÁMETROS Y REPUESTOS -->
+    <section id="pestana-parametros" class="space-y-4 hidden">
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
+        <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider text-red-600 border-b pb-2">Parámetros Operativos Medidos</h2>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-semibold text-slate-600">Voltaje Red (V)</label>
+            <input type="text" id="param_voltaje" value="220V" class="w-full mt-1 p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-slate-600">Temp. Humos (°C)</label>
+            <input type="text" id="param_temp_humos" placeholder="Ej: 115 °C" class="w-full mt-1 p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm">
+          </div>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-600">Calidad del Pellet Inspeccionado</label>
+          <select id="param_pellet_calidad" class="w-full mt-1 p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm">
+            <option value="Bueno (Seco / Baja ceniza)">Bueno (Seco / Baja ceniza)</option>
+            <option value="Regular (Presencia de polvillo)">Regular (Presencia de polvillo)</option>
+            <option value="Malo (Húmedo / Exceso ceniza)">Malo (Húmedo / Exceso ceniza)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
+        <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider text-red-600 border-b pb-2">Repuestos y Materiales Utilizados</h2>
+        <textarea id="repuestos_usados" rows="3" placeholder="Ej: - Reemplazo de cordón de vidrio 8mm en puerta&#10;- Silicona de alta temperatura en codo T" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm"></textarea>
+      </div>
+
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-3">
+        <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider text-red-600 border-b pb-2">Observaciones y Recomendaciones</h2>
+        <textarea id="observaciones" rows="3" placeholder="Recomendaciones para el cliente (Ej: Limpiar el brasero diariamente, usar solo pellet certificado ENplus A1)." class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-sm"></textarea>
+      </div>
+
+      <button onclick="cambiarPestana('firmas')" class="w-full bg-red-600 text-white font-bold py-3 rounded-xl shadow-md hover:bg-red-700 transition">
+        Siguiente: Firmas y Finalizar ➔
+      </button>
+    </section>
+
+    <!-- PESTAÑA 4: FIRMAS Y PDF -->
+    <section id="pestana-firmas" class="space-y-4 hidden">
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 space-y-4">
+        <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider text-red-600 border-b pb-2">Firma Digital de Conformidad</h2>
+        
+        <div>
+          <label class="text-xs font-semibold text-slate-600 block mb-1">Firma del Cliente (En pantalla)</label>
+          <div class="border border-slate-300 rounded-lg bg-slate-50 overflow-hidden">
+            <canvas id="canvas-cliente" class="w-full h-32 touch-none block"></canvas>
+          </div>
+          <button onclick="limpiarCanvas('canvas-cliente')" class="text-xs text-slate-500 underline mt-1">Limpiar firma cliente</button>
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-slate-600 block mb-1">Firma del Técnico</label>
+          <div class="border border-slate-300 rounded-lg bg-slate-50 overflow-hidden">
+            <canvas id="canvas-tecnico" class="w-full h-32 touch-none block"></canvas>
+          </div>
+          <button onclick="limpiarCanvas('canvas-tecnico')" class="text-xs text-slate-500 underline mt-1">Limpiar firma técnico</button>
+        </div>
+      </div>
+
+      <div class="space-y-2 pt-2">
+        <button onclick="generarInformePDF()" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-lg hover:bg-emerald-700 transition flex items-center justify-center gap-2 text-base">
+          <span>📄</span> Generar Informe PDF
+        </button>
+        <button onclick="compartirWhatsApp()" class="w-full bg-green-500 text-white font-bold py-3 rounded-xl shadow hover:bg-green-600 transition flex items-center justify-center gap-2 text-sm">
+          <span>💬</span> Enviar Notificación por WhatsApp
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- LÓGICA JAVASCRIPT -->
+  <script>
+    const itemsChecklist = [
+      { id: 'c1', cat: 'Cámara y Combustión', txt: 'Limpieza profunda de crisol y cenicero' },
+      { id: 'c2', cat: 'Cámara y Combustión', txt: 'Deshollinado de intercambiadores de calor' },
+      { id: 'c3', cat: 'Cámara y Combustión', txt: 'Aspirado de cámara de combustión y pasos de humo' },
+      { id: 'c4', cat: 'Sistemas de Evacuación', txt: 'Deshollinado completo de ductos e interior de casa' },
+      { id: 'c5', cat: 'Sistemas de Evacuación', txt: 'Limpieza e inspección de codo en T y depósito de hollín' },
+      { id: 'c6', cat: 'Sistemas de Evacuación', txt: 'Inspección y limpieza de extractor de gases' },
+      { id: 'c7', cat: 'Mecánica y Ventilación', txt: 'Limpieza de tolva de pellet y vaciado de polvillo' },
+      { id: 'c8', cat: 'Mecánica y Ventilación', txt: 'Inspección de sinfín y motorreductor de carga' },
+      { id: 'c9', cat: 'Mecánica y Ventilación', txt: 'Limpieza de turbina convectora de aire ambiente' },
+      { id: 'c10', cat: 'Electricidad y Seguridad', txt: 'Verificación de resistencia / bujía de encendido' },
+      { id: 'c11', cat: 'Electricidad y Seguridad', txt: 'Prueba de presostato de vacío y sondas de temp.' },
+      { id: 'c12', cat: 'Electricidad y Seguridad', txt: 'Inspección de cordón / sello hermético de puerta' }
+    ];
+
+    let estadosChecklist = {};
+
+    window.onload = function() {
+      document.getElementById('ot_fecha').value = new Date().toISOString().split('T')[0];
+      document.getElementById('ot_numero').value = 'OT-' + Math.floor(1000 + Math.random() * 9000);
+
+      renderizarChecklist();
+      inicializarCanvas('canvas-cliente');
+      inicializarCanvas('canvas-tecnico');
+    };
+
+    function cambiarPestana(pestana) {
+      ['datos', 'checklist', 'parametros', 'firmas'].forEach(p => {
+        document.getElementById(`pestana-${p}`).classList.add('hidden');
+        document.getElementById(`btn-${p}`).classList.remove('tab-active', 'text-red-600');
+        document.getElementById(`btn-${p}`).classList.add('text-slate-500');
+      });
+
+      document.getElementById(`pestana-${pestana}`).classList.remove('hidden');
+      document.getElementById(`btn-${pestana}`).classList.add('tab-active', 'text-red-600');
+      document.getElementById(`btn-${pestana}`).classList.remove('text-slate-500');
+      window.scrollTo(0,0);
+    }
+
+    function renderizarChecklist() {
+      const contenedor = document.getElementById('contenedor-checklist');
+      contenedor.innerHTML = '';
+
+      let ultimaCat = '';
+      itemsChecklist.forEach(item => {
+        if (item.cat !== ultimaCat) {
+          ultimaCat = item.cat;
+          const tituloCat = document.createElement('h3');
+          tituloCat.className = "font-bold text-xs text-slate-500 uppercase mt-4 mb-2 border-b pb-1";
+          tituloCat.innerText = item.cat;
+          contenedor.appendChild(tituloCat);
+        }
+
+        estadosChecklist[item.id] = 'OK';
+
+        const div = document.createElement('div');
+        div.className = "bg-slate-50 p-3 rounded-lg border border-slate-200 flex flex-col gap-2";
+        div.innerHTML = `
+          <span class="text-xs font-semibold text-slate-800">${item.txt}</span>
+          <div class="flex gap-1" id="group-${item.id}">
+            <button type="button" onclick="setEstado('${item.id}', 'OK')" id="btn-${item.id}-OK" class="flex-1 py-1 text-xs font-bold rounded bg-emerald-600 text-white shadow-sm">OK</button>
+            <button type="button" onclick="setEstado('${item.id}', 'REP')" id="btn-${item.id}-REP" class="flex-1 py-1 text-xs font-bold rounded bg-slate-200 text-slate-700">REP</button>
+            <button type="button" onclick="setEstado('${item.id}', 'REQ')" id="btn-${item.id}-REQ" class="flex-1 py-1 text-xs font-bold rounded bg-slate-200 text-slate-700">REQ</button>
+            <button type="button" onclick="setEstado('${item.id}', 'N/A')" id="btn-${item.id}-NA" class="flex-1 py-1 text-xs font-bold rounded bg-slate-200 text-slate-700">N/A</button>
+          </div>
+        `;
+        contenedor.appendChild(div);
+      });
+    }
+
+    function setEstado(id, estado) {
+      estadosChecklist[id] = estado;
+      const opciones = ['OK', 'REP', 'REQ', 'NA'];
+      opciones.forEach(op => {
+        const btn = document.getElementById(`btn-${id}-${op}`);
+        if (!btn) return;
+        if ((op === 'NA' && estado === 'N/A') || op === estado) {
+          btn.className = "flex-1 py-1 text-xs font-bold rounded text-white shadow-sm " +
+            (estado === 'OK' ? 'bg-emerald-600' : estado === 'REP' ? 'bg-blue-600' : estado === 'REQ' ? 'bg-amber-600' : 'bg-slate-600');
+        } else {
+          btn.className = "flex-1 py-1 text-xs font-bold rounded bg-slate-200 text-slate-700";
+        }
+      });
+    }
+
+    // Firma en pantalla táctil / mouse reparada con { passive: false }
+    function inicializarCanvas(id) {
+      const canvas = document.getElementById(id);
+      const ctx = canvas.getContext('2d');
+      let dibujando = false;
+
+      function ajustarTamanio() {
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width || canvas.parentElement.clientWidth;
+        canvas.height = 128;
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+      }
+      
+      setTimeout(ajustarTamanio, 100);
+      window.addEventListener('resize', ajustarTamanio);
+
+      function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
+      }
+
+      function empezar(e) { 
+        dibujando = true; 
+        ctx.beginPath(); 
+        const pos = getPos(e); 
+        ctx.moveTo(pos.x, pos.y); 
+      }
+
+      function mover(e) { 
+        if (!dibujando) return; 
+        e.preventDefault(); // Ahora funciona correctamente con passive: false
+        const pos = getPos(e); 
+        ctx.lineTo(pos.x, pos.y); 
+        ctx.stroke(); 
+      }
+
+      function parar() { 
+        dibujando = false; 
+      }
+
+      canvas.addEventListener('mousedown', empezar);
+      canvas.addEventListener('mousemove', mover);
+      canvas.addEventListener('mouseup', parar);
+      canvas.addEventListener('mouseleave', parar);
+
+      canvas.addEventListener('touchstart', empezar, { passive: false });
+      canvas.addEventListener('touchmove', mover, { passive: false });
+      canvas.addEventListener('touchend', parar);
+    }
+
+    function limpiarCanvas(id) {
+      const canvas = document.getElementById(id);
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // Generación de PDF profesional con jsPDF y firmas integradas
+    function generarInformePDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      const ot = document.getElementById('ot_numero').value;
+      const fecha = document.getElementById('ot_fecha').value;
+      const cliente = document.getElementById('cliente_nombre').value || 'Cliente General';
+      const direccion = document.getElementById('cliente_direccion').value || 'N/A';
+      const telefono = document.getElementById('cliente_telefono').value || 'N/A';
+      
+      const marca = document.getElementById('equipo_marca').value || 'N/A';
+      const modelo = document.getElementById('equipo_modelo').value || 'N/A';
+      const serie = document.getElementById('equipo_serie').value || 'N/A';
+      const horas = document.getElementById('equipo_horas').value || 'N/A';
+
+      // ENCABEZADO
+      doc.setFillColor(15, 23, 42); // slate-900
+      doc.rect(0, 0, 210, 26, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("PELLETTECH PRO - INFORME TÉCNICO DE MANTENCIÓN", 14, 16);
+      
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.text(`N° OT: ${ot} | Fecha: ${fecha}`, 150, 16, { align: 'right' });
+
+      // DATOS GENERALES
+      let y = 34;
+      doc.setTextColor(15, 23, 42);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text("1. DATOS DEL CLIENTE Y EQUIPO", 14, y);
+
+      y += 6;
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Cliente: ${cliente}`, 14, y);
+      doc.text(`Teléfono: ${telefono}`, 110, y);
+      
+      y += 5;
+      doc.text(`Dirección: ${direccion}`, 14, y);
+      
+      y += 5;
+      doc.text(`Equipo: ${marca} ${modelo} | N° Serie: ${serie} | Horas de uso: ${horas} hrs`, 14, y);
+
+      // CHECKLIST
+      y += 10;
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text("2. CHECKLIST DE TRABAJO REALIZADO", 14, y);
+
+      y += 4;
+      doc.setFontSize(8);
+      itemsChecklist.forEach((item) => {
+        y += 5.5;
+        if (y > 265) { 
+          doc.addPage(); 
+          y = 20; 
+        }
+        const est = estadosChecklist[item.id] || 'OK';
+        doc.setFont("helvetica", "normal");
+        doc.text(`• ${item.txt}`, 14, y);
+        
+        doc.setFont("helvetica", "bold");
+        if(est === 'OK') doc.setTextColor(16, 185, 129);
+        else if(est === 'REP') doc.setTextColor(37, 99, 235);
+        else if(est === 'REQ') doc.setTextColor(217, 119, 6);
+        else doc.setTextColor(100, 116, 139);
+
+        doc.text(`[ ${est} ]`, 185, y, { align: 'right' });
+        doc.setTextColor(15, 23, 42);
+      });
+
+      // PARÁMETROS Y REPUESTOS
+      y += 8;
+      if (y > 240) { doc.addPage(); y = 20; }
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text("3. PARÁMETROS Y REPUESTOS UTILIZADOS", 14, y);
+
+      y += 6;
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      const temp = document.getElementById('param_temp_humos').value || 'N/A';
+      const calidad = document.getElementById('param_pellet_calidad').value;
+      const repuestos = document.getElementById('repuestos_usados').value || 'Ninguno';
+      const obs = document.getElementById('observaciones').value || 'Sin observaciones particulares.';
+
+      doc.text(`• Temp. Humos: ${temp}  |  Calidad Pellet: ${calidad}`, 14, y);
+      y += 5;
+      doc.text(`• Repuestos / Materiales: ${repuestos}`, 14, y, { maxWidth: 180 });
+      y += 8;
+      doc.text(`• Observaciones: ${obs}`, 14, y, { maxWidth: 180 });
+
+      // FIRMAS DIGITALES EN EL PDF
+      y += 14;
+      if (y > 220) { doc.addPage(); y = 20; }
+      
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text("4. VALIDACIÓN Y FIRMAS", 14, y);
+
+      y += 6;
+      const canvasCliente = document.getElementById('canvas-cliente');
+      const canvasTecnico = document.getElementById('canvas-tecnico');
+
+      const imgCliente = canvasCliente.toDataURL('image/png');
+      const imgTecnico = canvasTecnico.toDataURL('image/png');
+
+      doc.addImage(imgCliente, 'PNG', 14, y, 70, 25);
+      doc.addImage(imgTecnico, 'PNG', 115, y, 70, 25);
+
+      y += 27;
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      doc.text("Firma del Cliente", 14, y);
+      doc.text("Firma del Técnico Responsable", 115, y);
+
+      // Guardar PDF
+      doc.save(`Informe_Mantencion_${ot}_${cliente.replace(/\s+/g, '_')}.pdf`);
+    }
+
+    function compartirWhatsApp() {
+      const cliente = document.getElementById('cliente_nombre').value || 'Cliente';
+      const ot = document.getElementById('ot_numero').value;
+      const tel = document.getElementById('cliente_telefono').value.replace(/[^0-9]/g, '');
+      
+      const mensaje = `Hola ${cliente}, le saludamos de Servicio Técnico. Adjuntamos la confirmación del mantenimiento realizado a su estufa a pellet bajo la Orden de Trabajo N° ${ot}. ¡Su equipo ha quedado limpio y verificado para su uso seguro!`;
+      
+      window.open(`https://wa.me/${tel}?text=${encodeURIComponent(mensaje)}`, '_blank');
+    }
+
+    function reiniciarFormulario() {
+      if (confirm("¿Deseas iniciar una nueva Orden de Trabajo? Se limpiarán los datos actuales.")) {
+        location.reload();
+      }
+    }
+  </script>
+</body>
+</html>
